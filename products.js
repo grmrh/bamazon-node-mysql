@@ -3,11 +3,6 @@ const colors = require('colors');
 const {table} = require('table');
 
 function Product() {
-  // this.item_id;
-  // this.product_name;
-  // this.department_name;
-  // this.price;
-  // this.stock_quantity;
 
   this.bamazonSchema;
   this.productsTable;
@@ -30,10 +25,30 @@ function Product() {
   };
 }
 
+Product.prototype.consoleDisplay = function(action) {
+
+  if (action === 'getAll') {
+    console.log(`Total ${this.productAll.length} products in the Bamazon, Amazon-Like online commerse`);
+    console.log(table(this.productAll));    
+  }
+  else if (action === 'checkInventory') {
+    console.log(`${this.productSelected}` 
+      ? `your order for ${this.productSelected[0][1]} found` 
+      : `${this.productAll[queryParam.itemId-1][1]} is out of stock or not enough quantity`.red);
+    console.log(`${this.productSelected}`
+      ? table(this.productSelected) 
+      : '');    
+  } else if (action === 'updateInventory') {
+    console.log(`${this.productSelected[0][1]} stock quantiy is now ${this.productSelected[0][4]}.`)
+    console.log(table(this.productSelected)); 
+    console.log(`The toal cost for the order is $${this.productSelected[0][3] * queryParam.quantity}.`.inverse.green)   
+  }
+}
+
 // read all rows in product table
 Product.prototype.getAllProducts = function() {
 
-  mysqlx
+  return mysqlx
     .getSession(this.connectionOption)
     .then(session => {
       this.bamazonSchema = session.getSchema('bamazon');
@@ -44,28 +59,29 @@ Product.prototype.getAllProducts = function() {
         .execute(row => {
           this.productAll.push(row);
           //console.log(table(this.productAll));    
-        })
-        .then(() => session);   
-    })  
-    .then(session => {
-      console.log(`Total ${this.productAll.length} products in the Amazon-Like online commerse`);
-      console.log(table(this.productAll));    
-      //console.log(result.getAffectedRowsCount());
-      return session;
-    })
-    .then(session => {
-      return session.close();
-      //process.exit(0);
-    })
-    .catch(err => {
-      console.log(err.stack);
-      process.exit(1);
-    })
+        });
+        //.then(() => this.consoleDisplay('getAll'));
+        //.then(() => session);   
+    }); 
+    // .then(session => {
+    //   console.log(`Total ${this.productAll.length} products in the Amazon-Like online commerse`);
+    //   console.log(table(this.productAll));    
+    //   //console.log(result.getAffectedRowsCount());
+    //   return session;
+    // })
+    // .then(session => {
+    //   return session.close();
+    //   //process.exit(0);
+    // })
+    // .catch(err => {
+    //   console.log(err.stack);
+    //   process.exit(1);
+    // })
 }
 
 Product.prototype.checkInventory = function(queryParam) {
 
-  mysqlx
+  return mysqlx
     .getSession(this.connectionOption)
     .then(session => {
       this.bamazonSchema = session.getSchema('bamazon');
@@ -84,23 +100,27 @@ Product.prototype.checkInventory = function(queryParam) {
         .then(() => session);   
     })
     .then(session => {
-      console.log(`${this.productSelected}` 
-            ? `your order for ${this.productSelected[0][1]} found` 
-            : `${this.productAll[queryParam.itemId-1][1]} is out of stock or not enough quantity`.red);
-      console.log(`${this.productSelected}`
-            ? table(this.productSelected) 
-            : '');    
-      //console.log(result.getAffectedRowsCount());
-      return session;
-    })
-    .then(session => {
       return session.close();
       //process.exit(0);
     })
-    .catch(err => {
-      console.log(err.stack);
-      process.exit(1);
-    })
+    // .then(session => {
+    //   console.log(`${this.productSelected}` 
+    //         ? `your order for ${this.productSelected[0][1]} found` 
+    //         : `${this.productAll[queryParam.itemId-1][1]} is out of stock or not enough quantity`.red);
+    //   console.log(`${this.productSelected}`
+    //         ? table(this.productSelected) 
+    //         : '');    
+    //   //console.log(result.getAffectedRowsCount());
+    //   return session;
+    // })
+    // .then(session => {
+    //   return session.close();
+    //   //process.exit(0);
+    // })
+    // .catch(err => {
+    //   console.log(err.stack);
+    //   process.exit(1);
+    // })
 }
 
 Product.prototype.updateInventory = function(queryParam) {
@@ -108,7 +128,7 @@ Product.prototype.updateInventory = function(queryParam) {
   if (this.productSelected.length == 1 && this.productSelected[0][0] == queryParam.itemId) {
     this.productSelected[0][4] -= queryParam.quantity;
 
-    mysqlx
+    return mysqlx
     .getSession(this.connectionOption)
     .then(session => {
       this.bamazonSchema = session.getSchema('bamazon');
@@ -119,27 +139,28 @@ Product.prototype.updateInventory = function(queryParam) {
         .set('stock_quantity', this.productSelected[0][4])
         .where('item_id = :item_id')
         .bind('item_id', queryParam.itemId)
-        .execute(row => {
-          this.productUpdated.push(row);
-          //console.log(table(dataAll));    
-        })
-        .then(() => session);   
+        .execute();
+        // .execute(row => {
+        //   this.productUpdated.push(row);
+        //   //console.log(table(dataAll));    
+        // })
+        // .then(() => session);   
     })
-    .then(session => {
-      console.log(`${this.productSelected[0][1]} stock quantiy is now ${this.productSelected[0][4]}.`)
-      console.log(table(this.productSelected)); 
-      console.log(`The toal cost for the order is $${this.productSelected[0][3] * queryParam.quantity}.`.inverse.green)   
-      return session;
-      //console.log(result.getAffectedRowsCount());
-    })
-    .then(session => {
-      return session.close();
-      //process.exit(0);
-    })
-    .catch(err => {
-      console.log(err.stack);
-      process.exit(1);
-    })
+    // .then(session => {
+    //   console.log(`${this.productSelected[0][1]} stock quantiy is now ${this.productSelected[0][4]}.`)
+    //   console.log(table(this.productSelected)); 
+    //   console.log(`The toal cost for the order is $${this.productSelected[0][3] * queryParam.quantity}.`.inverse.green)   
+    //   return session;
+    //   //console.log(result.getAffectedRowsCount());
+    // })
+    // .then(session => {
+    //   return session.close();
+    //   //process.exit(0);
+    // })
+    // .catch(err => {
+    //   console.log(err.stack);
+    //   process.exit(1);
+    // })
   }
 }
 

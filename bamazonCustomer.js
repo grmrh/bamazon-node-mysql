@@ -40,6 +40,14 @@ Bamazon.prototype.processOrder = function() {
 
 
 var Bamazon = new Bamazon();
-Bamazon.Product.getAllProducts();
-setTimeout(Bamazon.processOrder.bind(this), 1000);
+// get all products and display in console, then start to take an order from user input
+Bamazon.Product
+  .getAllProducts()
+  .then(session => Bamazon.Product.consoleDisplay('getAll'))
+  .then(() => Bamazon.processOrder());
+
+//console.log(Bamazon.Product.getAllProducts());
+
+                //.then(session => Bamazon.Product.consoleDisplay('getAll'));
+//setTimeout(Bamazon.processOrder.bind(this), 1000);
 
