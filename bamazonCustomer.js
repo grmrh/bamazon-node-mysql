@@ -5,49 +5,54 @@ const question = [
   {
     type: 'input',
     name: 'itemId',
-    message: 'Enter product ID to buy'
+    message: 'Enter product ID to buy: '
   },
   {
     type: 'input',
     name: 'quantity',
-    message: 'Enter quantity(number)'
+    message: 'Enter quantity: '
   }
 ]
 
 function Bamazon() {
-  this.Product = new Product();
+  this.products = new Product();
 }
 
 Bamazon.prototype.processOrder = function() {
   inquirer.prompt(question)
     .then(ans => {
       //BIG question: why this instead of Bamazon does not work
-      Bamazon.Product.checkInventory(ans);
-      setTimeout(() => {
-        if (Bamazon.Product.productSelected && Bamazon.Product.productSelected.length <= 0) {
-          Bamazon.Product.outOfStockMessage();
-          // ask customer if still want to palce an order
-          Bamazon.processOrder();
-        } 
-        else {
-          Bamazon.Product.updateInventory(ans);
-          //this.Products.getTotalCost(ans);
-        }
-      }, 1000);
+      this.products
+        .checkInventory(ans)
+        .then(() => this.products.consoleDisplay('checkInventory'))
+        .then(() => {
+          if (this.products.productSelected && this.products.productSelected.length <= 0) {
+            this.products.outOfStockMessage();
+            // ask customer if still want to palce an order
+            this.processOrder();
+          } 
+          else 
+          {
+            this.products.stockedMessage();           
+            this.products.updateInventory_v2(ans, 'reduce');   
+            this.products.consoleDisplay('updateInventory');
+            this.products.consoleDisplay('totalCost', ans);
+            process.exit(0);
+            //this.Products.getTotalCost(ans);
+          }
+        })
+        .catch(err => {
+          console.log(err.stack);
+          console.log(err.message);
+          process.exit(1);
+        })
     });
-
 }
 
-
-var Bamazon = new Bamazon();
+var bamazon = new Bamazon();
 // get all products and display in console, then start to take an order from user input
-Bamazon.Product
+bamazon.products
   .getAllProducts()
-  .then(session => Bamazon.Product.consoleDisplay('getAll'))
-  .then(() => Bamazon.processOrder());
-
-//console.log(Bamazon.Product.getAllProducts());
-
-                //.then(session => Bamazon.Product.consoleDisplay('getAll'));
-//setTimeout(Bamazon.processOrder.bind(this), 1000);
+  .then(session => bamazon.products.consoleDisplay('getAll'))
+  .then(() => bamazon.processOrder());
 
