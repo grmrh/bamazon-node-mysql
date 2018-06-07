@@ -20,13 +20,6 @@ function Product() {
     password: 'root',
     user: 'root'
   };
-
-  // this.outOfStockMessage = function() {
-  //   return `Insufficient quantity! ${this.product_name} is currently out of stock`;
-  // };
-  // this.stockedMessage = function() {
-  //   return `Yes, ${this.product_name} is currently ${this.stock_quantity} in stock`;
-  // };
 }
 
 Product.prototype.consoleDisplay = function(action, queryParam) {
@@ -146,7 +139,6 @@ Product.prototype.checkInventory = function(queryParam) {
         .bind('stock_quantity', queryParam.quantity)
         .execute(row => {
           this.productSelected.push(row);
-          //console.log(table(dataAll));    
         })
         .then(() => session);   
     })
