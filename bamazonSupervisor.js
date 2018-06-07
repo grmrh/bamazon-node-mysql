@@ -2,11 +2,12 @@
 
 const inquirer = require('inquirer');
 const colors = require('colors');
-const product = require('./departments');
+const Departments = require('./departments');
 
 const menu = [
   'View Product Sales by Department',
-  'Create New Department'
+  'Create New Department',
+  'View All Departments'
 ];
 const questionToDo = [
   {
@@ -36,17 +37,17 @@ const questionToCreateDepartment = [
 
 class Supervisor {
 
-  constructor(documents) {
-    this._documents = documents;
+  constructor(departments) {
+    this._departments = departments;
   }
 
-  get documents() {
-    return this._documents;
+  get departments() {
+    return this._departments;
   }
 
-  set documents(documentSet) {
-    if (documentSet) {
-      this._documents = documentSet;
+  set departments(departmentSet) {
+    if (departmentSet) {
+      this._departments = departmentSet;
     }
   }
 
@@ -63,6 +64,10 @@ class Supervisor {
           inquirer.prompt(questionToCreateDepartment)
             .then(ans => this.addDepartment(ans));
           break;
+        case menu[2]:
+          this.viewAllDepartments();
+          //this.products.getAllProducts()
+          break;     
         default:
           return;
       };
@@ -70,9 +75,9 @@ class Supervisor {
   }
 
   viewProductSalesByDepartment() {
-    this.documents.getProductSalesByDepartment(() =>this.supervisorTask())
+    this._departments.getProductSalesByDepartment(() =>this.supervisorTask())
       // .then(() => this.documents.consoleDisplay('productSalesByDepartment'))
-      // .then(() => this.supervisorTask())
+      // .then(() => this.supervisorsk())
       .catch(err => {
         console.log(err.stack);
         console.log(err.message);
@@ -81,7 +86,7 @@ class Supervisor {
   }
 
   addDepartment(queryParam) {
-    this.documents.postDepartment(queryParam)
+    this._departments.postDepartment(queryParam)
       .then(() => this.documents.getAllDepartments())
       .then(() => this.documents.consoleDisplay('getAllDepartment'))
       .then(() => this.supervisorTask())
@@ -92,9 +97,21 @@ class Supervisor {
       })
   }
 
+  viewAllDepartments() {
+    this._departments.getAllDepartments()
+      //.then(() => this._products.consoleDisplay('getAll'))
+      .then(() => this.supervisorTask())
+      .catch(err => {
+        console.log(err.stack);
+        console.log(err.message);
+        process.exit(1);
+      })
+  }
+
+
 }
 
 // let start manager task
-var prod = new Product();
-var supervisor = new Supervisor(prod);
+var depts = new Departments();
+var supervisor = new Supervisor(depts);
 supervisor.supervisorTask();

@@ -13,14 +13,13 @@ class Department {
     this.departmentSelected = [];
     this.departmentInserted = [];
     this.productSalesByDepartment = [];
+    this.connectionOption = {
+      host: 'localhost',
+      port: 33060,
+      password: 'root',
+      user: 'root'
+    }; 
   }
-
-  connectionOption = {
-    host: 'localhost',
-    port: 33060,
-    password: 'root',
-    user: 'root'
-  };
 
   getAllDepartments() {
 
@@ -63,7 +62,7 @@ class Department {
 
           var joinedQuery = 'select B.department_id, A.department_name, B.over_head_costs, ' + 
                                         'sum(product_sales) as departmental_product_sales, ' + 
-                                        'sum(product_sales)-B.over_head_costs as total_profit ' + 
+                                        '(sum(product_sales)-B.over_head_costs) as total_profit ' + 
                                         'from products A, departments B ' + 
                                         'group by A.department_name ' + 
                                         'order by B.department_id';
@@ -122,3 +121,5 @@ class Department {
       })
    }
 }
+
+module.exports = Department;
