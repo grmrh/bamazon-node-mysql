@@ -17,7 +17,8 @@ class Department {
       host: 'localhost',
       port: 33060,
       password: 'root',
-      user: 'root'
+      user: 'root',
+      database: 'bamazon'
     }; 
   }
 
@@ -60,19 +61,20 @@ class Department {
           this.bamazonSchema = session.getSchema('bamazon');
           this.departmentTable = this.bamazonSchema.getTable('departments');
 
-          var joinedQuery = 'select B.department_id, A.department_name, B.over_head_costs, ' + 
-                                        'sum(product_sales) as departmental_product_sales, ' + 
-                                        '(sum(product_sales)-B.over_head_costs) as total_profit ' + 
-                                        'from products A, departments B ' + 
-                                        'group by A.department_name ' + 
-                                        'order by B.department_id';
+          var joinedGroupedQuery = 'select A.*, sum(B.product_sales) as product_sales, ' +
+                        '(sum(B.product_sales) -A.over_head_costs) as total_profit ' +                   
+                        'from bamazon.departments A ' +
+                        'join bamazon.products B ' +
+                        'On A.department_name = B.department_name ' + 
+                        'group by A.department_name ' +
+                        'order by A.department_id';
           return session
-            .executeSql('joinedQuery')
+            .executeSql(joinedGroupedQuery)
             .execute(row => {
               this.productSalesByDepartment.push(row);
               //console.log(table(this.productAll));    
             })
-            .then(() => session);   
+            .then(() => session);    
         })
         .then(session => {
           console.log(table(this.productSalesByDepartment));
