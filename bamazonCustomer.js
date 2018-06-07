@@ -28,21 +28,10 @@ Bamazon.prototype.processOrder = function() {
         .then(() => {
           if (this.products.productSelected && this.products.productSelected.length <= 0) {        
             this.processOrder();}
-          this.products.updateInventory_v3(ans);
-          this.products.consoleDisplay('totalCost', ans);
+          this.products.updateInventory(ans, 'reduce')})
+        //.then(() => this.products.display('Inventory updated', this.products.productAll))
+        .then(() => this.products.consoleDisplay('totalCost', ans))
           //this.processOrder();
-        })
-        // .then(() => {this.products.consoleDisplay('totalCost', ans);
-        //             this.processOrder() }) 
-        //.then(() => this.products.getAllProducts())
-        //.then(() => this.products.consoleDisplay('getAll'))                                  
-        //.then(() => this.processOrder())
-            //this.products.updateInventory_v2(ans, 'reduce');   
-            // this.products.updateInventory_v3(ans);   
-            // this.products.consoleDisplay('updateInventory');
-            // this.products.consoleDisplay('totalCost', ans);
-            //process.exit(0);
-            //this.Products.getTotalCost(ans);
         .catch(err => {
           console.log(err.stack);
           console.log(err.message);

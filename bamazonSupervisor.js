@@ -5,10 +5,8 @@ const colors = require('colors');
 const Product = require('./products');
 
 const menu = [
-  'View Products for Sale',
-  'View Low Inventory',
-  'Add to Inventory',
-  'Add New Product'
+  'View Product Sales by Department',
+  'Create New Department'
 ];
 const questionToDo = [
   {
