@@ -2,7 +2,7 @@
 
 const inquirer = require('inquirer');
 const colors = require('colors');
-const Product = require('./products');
+const product = require('./departments');
 
 const menu = [
   'View Product Sales by Department',
@@ -16,101 +16,63 @@ const questionToDo = [
     choices: menu
   }
 ];
-const questionToManage = [
+const questionToCreateDepartment = [
   {
     type: 'input',
-    name: 'itemId',
-    message: 'Enter product ID to add: '
+    name: 'departmentId',
+    message: 'Enter department ID to add: '
   },
   {
     type: 'input',
-    name: 'quantity',
-    message: 'Enter quantity: '
-  }
-];
-
-const questionToAddProduct = [
-  {
-    type: 'input',
-    name: 'itemId',
-    message: 'Enter product ID to add: '
-  },
-  {
-    type: 'input',
-    name: 'productName',
-    message: 'Enter product name to add: '
+    name: 'departmentName',
+    message: 'Enter department name to add: '
   }, 
   {
     type: 'input',
-    name: 'department',
-    message: 'Enter department name: '
-  }, 
-  {
-    type: 'input',
-    name: 'price',
-    message: 'Enter a price for the product: '
-  },
-  {
-    type: 'input',
-    name: 'quantity',
-    message: 'Enter a quantity for the product: '
+    name: 'overHeadCosts',
+    message: 'Enter over-head-costs: '
   }
 ];
 
-const definitionOfLowStock = 5;
+class Supervisor {
 
-class Manager {
-
-  constructor(products) {
-    this._products = products;
+  constructor(documents) {
+    this._documents = documents;
   }
 
-  // getProducts() {
-  //   return this._products;
-  // }
-  get products() {
-    return this._products;
+  get documents() {
+    return this._documents;
   }
 
-  set products(productSet) {
-    if (productSet) {
-      this._products = productSet;
+  set documents(documentSet) {
+    if (documentSet) {
+      this._documents = documentSet;
     }
   }
 
-  managerTask() {
+  supervisorTask() {
 
     inquirer.prompt(questionToDo)
     .then(ans => {
 
       switch (ans.toDo) {
         case menu[0]:
-          this.viewAllProducts();
-          //this.products.getAllProducts()
+          this.viewProductSalesByDepartment();
           break;
         case menu[1]:
-          this.viewLowInventory(definitionOfLowStock);
-          break;
-        case menu[2]:
-          inquirer.prompt(questionToManage)
-            .then(ans => this.addInventory(ans));
-          break;
-        case menu[3]:
-          inquirer.prompt(questionToAddProduct)
-            .then(ans => this.addProduct(ans));
+          inquirer.prompt(questionToCreateDepartment)
+            .then(ans => this.addDepartment(ans));
           break;
         default:
           return;
       };
-      //setTimeout(this.managerTask(), 1000);
     });
-    //.then(() => this.managerTask());
   }
 
-  viewAllProducts() {
-    this._products.getAllProducts()
-      .then(() => this._products.consoleDisplay('getAll'))
-      .then(() => this.managerTask())
+  viewProductSalesByDepartment() {
+    this.documents.getProductSalesByDepartment(() =>this.supervisorTask())
+      // .then(() => this.documents.consoleDisplay('productSalesByDepartment'))
+      // .then(() => this.supervisorTask())
       .catch(err => {
         console.log(err.stack);
         console.log(err.message);
@@ -118,35 +80,11 @@ class Manager {
       })
   }
 
-  viewLowInventory(limitOfLowStock) {
-    this._products.getLowInventory(limitOfLowStock)
-      .then(() => this._products.display(`Low inventory list - less than ${limitOfLowStock}`, this._products.productSelected))
-      .then(() => this.managerTask())
-      .catch(err => {
-        console.log(err.stack);
-        console.log(err.message);
-        process.exit(1);
-      })
-  }
-
-  addInventory(queryParam)  {
-    this._products.getProduct(queryParam)
-      .then(() => this._products.consoleDisplay('getProduct'))
-      .then(() => this._products.updateInventory(queryParam, 'add'))
-      //.then(() => this._products.display('Inventory updated', this._products.productAll))
-      .then(() => this.managerTask())
-      .catch(err => {
-        console.log(err.stack);
-        console.log(err.message);
-        process.exit(1);
-      })
-  }
-
-  addProduct(queryParam) {
-    this._products.postProduct(queryParam)
-      .then(() => this._products.getAllProducts())
-      .then(() => this._products.consoleDisplay('getAll'))
-      .then(() => this.managerTask())
+  addDepartment(queryParam) {
+    this.documents.postDepartment(queryParam)
+      .then(() => this.documents.getAllDepartments())
+      .then(() => this.documents.consoleDisplay('getAllDepartment'))
+      .then(() => this.supervisorTask())
       .catch(err => {
         console.log(err.stack);
         console.log(err.message);
@@ -158,5 +96,5 @@ class Manager {
 
 // let start manager task
 var prod = new Product();
-var manager = new Manager(prod);
-manager.managerTask();
+var supervisor = new Supervisor(prod);
+supervisor.supervisorTask();
