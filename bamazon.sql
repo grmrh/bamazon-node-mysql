@@ -21,3 +21,25 @@ CREATE TABLE departments (
   over_head_costs DECIMAL(10, 2) NOT NULL,
   PRIMARY KEY (department_id)
 );
+
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1001, "Computer & devices", 1000.00);
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1002, "Household kitchen", 500.00);
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1003, "Auto parts", 750.00);
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1004, "Seasonal", 300.00);
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1005, "Office products", 750.00);
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1006, "Food", 1750.00);
+
+INSERT INTO departments (department_id, department_name, over_head_costs)
+VALUES (1007, "Electronics", 2750.00);
