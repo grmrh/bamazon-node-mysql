@@ -20,28 +20,29 @@ function Product() {
     user: 'root'
   };
 
-  this.outOfStockMessage = function() {
-    return `Insufficient quantity! ${this.product_name} is currently out of stock`;
-  };
-  this.stockedMessage = function() {
-    return `Yes, ${this.product_name} is currently ${this.stock_quantity} in stock`;
-  };
+  // this.outOfStockMessage = function() {
+  //   return `Insufficient quantity! ${this.product_name} is currently out of stock`;
+  // };
+  // this.stockedMessage = function() {
+  //   return `Yes, ${this.product_name} is currently ${this.stock_quantity} in stock`;
+  // };
 }
 
 Product.prototype.consoleDisplay = function(action, queryParam) {
 
   if (action === 'getAll') {
-    console.log(`Total ${this.productAll.length} products in the Bamazon, Amazon-Like online commerse`.green);
+    console.log('');
+    console.log(`Total ${this.productAll.length} products in the Bamazon, Amazon-Like online commerse`);
     console.log(table(this.productAll));    
   }
   else if (action === 'getProduct') {
-    console.log('Product selected for adding its inventory');
+    console.log('Selected product to add its inventory');
     console.log(table(this.productSelected));    
   }
   else if (action === 'checkInventory') {
     console.log(`${this.productSelected}` 
-      ? `your order for ${this.productSelected[0][1]} found` 
-      : `${this.productSelected[0][1]} is out of stock or not enough quantity`.red);
+      ? `your order item, ${this.productSelected[0][1]}, found and sufficient quantity!` 
+      : `your order item, ${this.productSelected[0][1]}, is out of stock or not sufficient quantity`.red);
     console.log(`${this.productSelected}`
       ? table(this.productSelected) 
       : '');    
@@ -57,8 +58,13 @@ Product.prototype.consoleDisplay = function(action, queryParam) {
 
 Product.prototype.print = function(message, data) {
   console.log(message || '');
-  data.forEach(d => console.log(d.join('; ')));
+  if (data && data.isArray()) {
+    data.forEach(d => console.log(d.join('; ')));}
+  else if (data && !data.isArray()) {
+    console.log(data);
+  }
 }
+
 Product.prototype.display = function(message, data, callback) {
   if (callback) {
     callback(message, data);
@@ -79,15 +85,16 @@ Product.prototype.getAllProducts = function() {
 
       return this.productsTable
         .select('item_id', 'product_name', 'department_name', 'price', 'stock_quantity')
+        .orderBy('item_id ASC')
         .execute(row => {
           this.productAll.push(row);
           //console.log(table(this.productAll));    
-        });
-        //.then(() => session);   
+        })
+        .then(() => session);   
     })
-    // .then(session => {
-    //   return session.close();
-    // })
+    .then(session => {
+      return session.close();
+    })
     .catch(err => {
       console.log(err.stack);
       process.exit(1);
@@ -110,12 +117,12 @@ Product.prototype.getProduct = function(queryParam) {
         .execute(row => {
           this.productSelected.push(row);
           //console.log(table(dataAll));    
-        });
-        // .then(() => session);   
+        })
+        .then(() => session);   
     })
-    // .then(session => {
-    //   return session.close();
-    // })
+    .then(session => {
+      return session.close();
+    })
     .catch(err => {
       console.log(err.stack);
       process.exit(1);
@@ -167,26 +174,38 @@ Product.prototype.updateInventory = function(queryParam, act) {
   console.log('product selected inside updateInventory', this.productSelected[0][4])
 
   return mysqlx
-    .getSession(this.connectionOption)
-    .then(session => {
-      this.bamazonSchema = session.getSchema('bamazon');
-      this.productsTable = this.bamazonSchema.getTable('products');
-
-      return this.productsTable
-        // .update('item_id', 'product_name', 'department_name', 'price', 'stock_quantity')
-        .update()
-        .where('item_id = 4')
-        .set('stock_quantity',  4)
-        
-        //.bind('item_id', queryParam.itemId)
-        //.bind('stock_quantity', this.productSelected[0][4])
-        .execute();
-      // .execute(row => {
-      //   this.productUpdated.push(row);
-      //   //console.log(table(dataAll));    
-      // })
-      // .then(() => session);   
-    })
+     .getSession(this.connectionOption)
+     .then(session => {
+       this.bamazonSchema = session.getSchema('bamazon');
+       this.productsTable = this.bamazonSchema.getTable('products');
+      //  if (this.productSelected.length == 1 && this.productSelected[0][0] == queryParam.itemId) 
+      //  {
+      //   this.productSelected[0][4] -= queryParam.quantity;
+      //   //console.log(this.productSelected[0][4]);
+      //  }
+       console.log('productSelect inside updateInventory ', this.productSelected);
+       return this.productsTable
+         .update()      
+         .set('stock_quantity', this.productSelected[0][4])       
+         .where('item_id = :item_id')
+         .bind('item_id', queryParam.itemId)
+         .execute()
+         .then(() => session);
+     })
+     .then(session => {
+        this.productAll = [];
+        return this.productsTable
+          .select('item_id', 'product_name', 'department_name', 'price', 'stock_quantity')
+          .orderBy('item_id ASC')
+          .execute(row => this.productAll.push(row))
+          // .then(() => {console.log("Current inventory");
+          //             console.log(table(this.productAll))})
+          .then(() => session);
+     })
+     .then(session => {
+      //return session;
+      return session.close();
+     })
     .catch(err => {
       console.log(err.stack);
       process.exit(1);
@@ -228,6 +247,51 @@ Product.prototype.updateInventory_v2 = function(queryParam, act) {
   })
 }
 
+Product.prototype.updateInventory_v3 = function(queryParam) {
+  //this.checkInventory(queryParam);
+  if (this.productSelected.length == 1 && this.productSelected[0][0] == queryParam.itemId) {
+    this.productSelected[0][4] -= queryParam.quantity;}
+ 
+    return mysqlx
+     .getSession(this.connectionOption)
+     .then(session => {
+       this.bamazonSchema = session.getSchema('bamazon');
+       this.productsTable = this.bamazonSchema.getTable('products');
+      //  if (this.productSelected.length == 1 && this.productSelected[0][0] == queryParam.itemId) 
+      //  {
+      //   this.productSelected[0][4] -= queryParam.quantity;
+      //   //console.log(this.productSelected[0][4]);
+      //  }
+       //console.log('productSelect inside updateInventory ', this.productSelected);
+       return this.productsTable
+         .update()      
+         .set('stock_quantity', this.productSelected[0][4])       
+         .where('item_id = :item_id')
+         .bind('item_id', queryParam.itemId)
+         .execute()
+         .then(() => session);
+     })
+     .then(session => {
+        this.productAll = [];
+        return this.productsTable
+          .select('item_id', 'product_name', 'department_name', 'price', 'stock_quantity')
+          .orderBy('item_id ASC')
+          .execute(row => this.productAll.push(row))
+          .then(() => {console.log("Current inventory");
+                        console.log(table(this.productAll))})
+          .then(() => session);
+     })
+     .then(session => {
+      //return session;
+      return session.close();
+    })
+     //.then(result => result.forEach(r => this.productAll.push(r)))
+     .catch(err => {
+      console.log(err.stack);
+      process.exit(1);
+    });
+  }
+
 Product.prototype.getLowInventory = function(num_below_than) {
   this.productSelected = [];
   return mysqlx
@@ -244,8 +308,11 @@ Product.prototype.getLowInventory = function(num_below_than) {
         .execute(row => {
           this.productSelected.push(row);
           //console.log(table(dataAll));    
-        });
-        // .then(() => session);   
+        })
+        .then(() => session);   
+    })
+    .then(session => {
+      return session.close();
     })
     // .then(session => {
     //   return session.close();

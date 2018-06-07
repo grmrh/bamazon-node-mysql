@@ -135,7 +135,7 @@ class Manager {
     this._products.getProduct(queryParam)
       .then(() => this._products.consoleDisplay('getProduct'))
       .then(() => this._products.updateInventory(queryParam, 'add'))
-      .then(() => this._products.display('Inventory udpated', this._products.productSelected))
+      .then(() => this._products.display('Inventory udpated', this._products.productAll))
       .then(() => this.managerTask())
       .catch(err => {
         console.log(err.stack);
