@@ -19,6 +19,7 @@ function Bamazon() {
 }
 
 Bamazon.prototype.processOrder = function() {
+
   inquirer.prompt(question)
     .then(ans => {
       //BIG question: why this instead of Bamazon does not work
@@ -45,9 +46,4 @@ Bamazon.Product
   .getAllProducts()
   .then(session => Bamazon.Product.consoleDisplay('getAll'))
   .then(() => Bamazon.processOrder());
-
-//console.log(Bamazon.Product.getAllProducts());
-
-                //.then(session => Bamazon.Product.consoleDisplay('getAll'));
-//setTimeout(Bamazon.processOrder.bind(this), 1000);
 
