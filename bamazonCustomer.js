@@ -1,8 +1,7 @@
 var Product = require('./products');
 const inquirer = require('inquirer');
 
-const question = [
-  {
+const question = [{
     type: 'input',
     name: 'itemId',
     message: 'Enter product ID to buy: '
@@ -14,36 +13,35 @@ const question = [
   }
 ]
 
-function Bamazon() {
-  this.products = new Product();
+function Bamazon(prod) {
+  this.products = prod;
 }
 
-Bamazon.prototype.processOrder = function() {
+Bamazon.prototype.processOrder = function () {
   inquirer.prompt(question)
     .then(ans => {
-      //BIG question: why this instead of Bamazon does not work
-      this.products
-        .checkInventory(ans)
-        .then(() => this.products.consoleDisplay('checkInventory'))
-        .then(() => {
-          if (this.products.productSelected && this.products.productSelected.length <= 0) {        
-            this.processOrder();}
-          this.products.updateInventory(ans, 'reduce')})
-        //.then(() => this.products.display('Inventory updated', this.products.productAll))
-        .then(() => this.products.consoleDisplay('totalCost', ans))
-          //this.processOrder();
-        .catch(err => {
-          console.log(err.stack);
-          console.log(err.message);
-          process.exit(1);
-        })
+      this.purchaseInventory(ans);
+    })
+}
+
+Bamazon.prototype.purchaseInventory = function(queryParam) {
+  this.products.checkInventory(queryParam)
+    .then(() => this.products.consoleDisplay('checkInventory'))
+    .then(() => this.products.updateInventory(queryParam, 'reduce'))   
+    .then(() => this.processOrder())
+    .catch(err => {
+      console.log(err.stack);
+      console.log(err.message);
+      process.exit(1);
     });
 }
 
-var bamazon = new Bamazon();
+// let start customer task
+var prod = new Product();
+var bamazon = new Bamazon(prod);
 // get all products and display in console, then start to take an order from user input
 bamazon.products
   .getAllProducts()
   .then(() => bamazon.products.consoleDisplay('getAll'))
   .then(() => bamazon.processOrder());
-
+  

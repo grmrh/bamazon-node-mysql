@@ -7,6 +7,7 @@ function Product() {
 
   this.bamazonSchema;
   this.productsTable;
+  this.sufficientStock = false;
   this.productAll = [];
   this.productSelected = [];
   this.productUpdated = [];
@@ -30,12 +31,12 @@ Product.prototype.consoleDisplay = function(action, queryParam) {
     console.log(table(this.productAll));    
   }
   else if (action === 'getProduct') {
-    console.log('Selected product to add its inventory');
+    console.log('Selected product to add to the inventory');
     console.log(table(this.productSelected));    
   }
   else if (action === 'checkInventory') {
     console.log(`${this.productSelected}` 
-      ? `your order item, ${this.productSelected[0][1]}, found and sufficient quantity!` 
+      ? `your order item, ${this.productSelected[0][1]}.cyan, found!` 
       : `your order item, ${this.productSelected[0][1]}, is out of stock or not sufficient quantity`.red);
     console.log(`${this.productSelected}`
       ? table(this.productSelected) 
@@ -81,8 +82,7 @@ Product.prototype.getAllProducts = function() {
         .select('item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales')
         .orderBy('item_id ASC')
         .execute(row => {
-          this.productAll.push(row);
-          //console.log(table(this.productAll));    
+          this.productAll.push(row);   
         })
         .then(() => session);   
     })
@@ -143,7 +143,21 @@ Product.prototype.checkInventory = function(queryParam) {
         .then(() => session);   
     })
     .then(session => {
-      //return session;
+      if (this.productSelected.length > 0) {
+        console.log("\nThe order item is in stock and the order is being processed.");
+        this.consoleDisplay('totalCost', queryParam);
+        this.sufficientStock = true;
+        //this.updateInventory(queryParam, 'reduce');
+        //.then(() => this.consoleDisplay('totalCost', queryParam));
+        
+      } else {
+        console.log("Insufficient quantity!!".red);
+        this.sufficientStock = false;
+      }
+
+      return session;
+    })
+    .then(session => {
       return session.close();
     })
     .catch(err => {
@@ -211,7 +225,7 @@ Product.prototype.updateInventory = function(queryParam, act) {
         .select('item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales')
         .orderBy('item_id ASC')
         .execute(row => this.productAll.push(row))
-        .then(() => {console.log("Current inventory");
+        .then(() => {console.log("\n Current inventory");
                     console.log(table(this.productAll))})
         .then(() => session);
     })
@@ -319,17 +333,13 @@ Product.prototype.getLowInventory = function(num_below_than) {
         .where('stock_quantity <= :stock_quantity')
         .bind('stock_quantity', num_below_than)
         .execute(row => {
-          this.productSelected.push(row);
-          //console.log(table(dataAll));    
+          this.productSelected.push(row); 
         })
         .then(() => session);   
     })
     .then(session => {
       return session.close();
     })
-    // .then(session => {
-    //   return session.close();
-    // })
     .catch(err => {
       console.log(err.stack);
       process.exit(1);
@@ -353,7 +363,7 @@ Product.prototype.postProduct = function(queryParam) {
         .insert(['item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales'])
         // .values([20, 'Small coffee filter', 'Office product', 23.54, 350])
         .values([parseInt(queryParam.itemId), queryParam.productName, queryParam.department, 
-          parseFloat(queryParam.price), parseInt(queryParam.quantity)])
+          parseFloat(queryParam.price), parseInt(queryParam.quantity), parseFloat(queryParam.productSales)])
         .execute(row => {
           this.productInserted.push(row);
         })

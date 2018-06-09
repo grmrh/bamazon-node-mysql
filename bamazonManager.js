@@ -56,6 +56,11 @@ const questionToAddProduct = [
     type: 'input',
     name: 'quantity',
     message: 'Enter a quantity for the product: '
+  },
+  {
+    type: 'input',
+    name: 'productSales',
+    message: 'Enter sales amount for the product: '
   }
 ];
 
@@ -67,9 +72,6 @@ class Manager {
     this._products = products;
   }
 
-  // getProducts() {
-  //   return this._products;
-  // }
   get products() {
     return this._products;
   }
@@ -88,7 +90,6 @@ class Manager {
       switch (ans.toDo) {
         case menu[0]:
           this.viewAllProducts();
-          //this.products.getAllProducts()
           break;
         case menu[1]:
           this.viewLowInventory(definitionOfLowStock);
@@ -104,9 +105,7 @@ class Manager {
         default:
           return;
       };
-      //setTimeout(this.managerTask(), 1000);
     });
-    //.then(() => this.managerTask());
   }
 
   viewAllProducts() {
@@ -135,7 +134,6 @@ class Manager {
     this._products.getProduct(queryParam)
       .then(() => this._products.consoleDisplay('getProduct'))
       .then(() => this._products.updateInventory(queryParam, 'add'))
-      //.then(() => this._products.display('Inventory updated', this._products.productAll))
       .then(() => this.managerTask())
       .catch(err => {
         console.log(err.stack);
